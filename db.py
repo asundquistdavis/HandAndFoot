@@ -1,11 +1,8 @@
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import DeclarativeBase, Session
-from typing import Any, Dict, Optional, Type, TypeVar, List
-
-from sqlalchemy.orm.query import Query
-from sqlalchemy.orm.session import _SessionBind, _SessionBindKey, JoinTransactionMode
-from sqlalchemy.sql._typing import _InfoType
-from sqlalchemy.util.typing import Literal
+from typing import TypeVar, List
+import os
+from config import REMOTE
 
 T = TypeVar('T')
 
@@ -15,15 +12,18 @@ class Base(DeclarativeBase):
         ...
 
 def json(instance:Base, parent:str=None, packable:str=False)->dict:
+    '''
+    ### returns a json serializable representation of object.
+    calls __json__(self, ...) on the object
+    '''
     if instance: return instance.__json__(parent)
     return {} if packable else None
 
 class DB(Session):
     
-    PRODUCTION = False
-    REMOTE = False
+    REMOTE = os.environ.get('REMOTE', None) or REMOTE
 
-    _remote_db_url = f'...'
+    _remote_db_url = f''
     _local_db_url = 'sqlite:///db.db'
 
     db_url = _remote_db_url if REMOTE else _local_db_url
